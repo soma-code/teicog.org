@@ -1,0 +1,39 @@
+{
+  "name": "teicog.org",
+  "version": "0.1.0",
+  "exports": "./src/main.ts",
+  "tasks": {
+    "start": "deno run --allow-net --allow-read --allow-env src/main.ts",
+    "dev": "deno run --allow-net --allow-read --allow-env --watch src/main.ts",
+    "test": "deno test --allow-all src/tests/",
+    "test:watch": "deno test --allow-all --watch src/tests/",
+    "fmt": "deno fmt",
+    "lint": "deno lint",
+    "check": "deno check src/main.ts"
+  },
+  "imports": {
+    "@std/": "https://deno.land/std@0.220.0/",
+    "@std/assert": "https://deno.land/std@0.220.0/assert/mod.ts",
+    "@std/testing": "https://deno.land/std@0.220.0/testing/mod.ts"
+  },
+  "compilerOptions": {
+    "allowJs": true,
+    "lib": ["deno.window"],
+    "strict": true
+  },
+  "fmt": {
+    "useTabs": false,
+    "lineWidth": 100,
+    "indentWidth": 2,
+    "semiColons": true,
+    "singleQuote": false,
+    "proseWrap": "preserve",
+    "include": ["src/"]
+  },
+  "lint": {
+    "include": ["src/"],
+    "rules": {
+      "tags": ["recommended"]
+    }
+  }
+}
