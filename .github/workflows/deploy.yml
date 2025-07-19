@@ -1,0 +1,132 @@
+name: Deploy to Deno Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    name: Lint and Test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.40.x
+
+      - name: Cache Deno dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/deno
+          key: ${{ runner.os }}-deno-${{ hashFiles('**/import_map.json', '**/deno.json') }}
+          restore-keys: |
+            ${{ runner.os }}-deno-
+
+      - name: Lint code
+        run: deno lint
+
+      - name: Format check
+        run: deno fmt --check
+
+      - name: Type check
+        run: deno check src/deploy.ts
+
+      - name: Run build script
+        run: deno task build
+
+  deploy:
+    name: Deploy to Deno Deploy
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    permissions:
+      id-token: write # Needed for auth with Deno Deploy
+      contents: read # Needed to clone the repository
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.40.x
+
+      - name: Cache Deno dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/deno
+          key: ${{ runner.os }}-deno-${{ hashFiles('**/import_map.json', '**/deno.json') }}
+          restore-keys: |
+            ${{ runner.os }}-deno-
+
+      - name: Upload to Deno Deploy
+        uses: denoland/deployctl@v1
+        with:
+          project: "teicog-org" # Replace with your Deno Deploy project name
+          entrypoint: "src/deploy.ts"
+          root: "."
+          include: |
+            src/
+            import_map.json
+            deno.json
+          exclude: |
+            .git/
+            .github/
+            scripts/
+            *.md
+            LICENSE
+
+  preview:
+    name: Deploy Preview
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    if: github.event_name == 'pull_request'
+    
+    permissions:
+      id-token: write # Needed for auth with Deno Deploy
+      contents: read # Needed to clone the repository
+      pull-requests: write # Needed to comment on PRs
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.40.x
+
+      - name: Cache Deno dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/deno
+          key: ${{ runner.os }}-deno-${{ hashFiles('**/import_map.json', '**/deno.json') }}
+          restore-keys: |
+            ${{ runner.os }}-deno-
+
+      - name: Deploy Preview to Deno Deploy
+        uses: denoland/deployctl@v1
+        with:
+          project: "teicog-org" # Replace with your Deno Deploy project name
+          entrypoint: "src/deploy.ts"
+          root: "."
+          include: |
+            src/
+            import_map.json
+            deno.json
+          exclude: |
+            .git/
+            .github/
+            scripts/
+            *.md
+            LICENSE
+        env:
+          DENO_DEPLOY_TOKEN: ${{ secrets.DENO_DEPLOY_TOKEN }}

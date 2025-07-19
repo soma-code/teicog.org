@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "lib": ["deno.window"],
+    "strict": true
+  },
+  "importMap": "import_map.json",
+  "tasks": {
+    "dev": "deno run --allow-net --allow-read --allow-env --watch src/dev.ts",
+    "start": "deno run --allow-net --allow-read --allow-env src/deploy.ts",
+    "build": "deno run --allow-net --allow-read --allow-write --allow-env --allow-run scripts/build.ts",
+    "preview": "deno run --allow-net --allow-read --allow-env src/deploy.ts"
+  },
+  "lint": {
+    "include": ["src/", "scripts/"],
+    "exclude": ["node_modules/", "dist/"]
+  },
+  "fmt": {
+    "include": ["src/", "scripts/"],
+    "exclude": ["node_modules/", "dist/"],
+    "options": {
+      "useTabs": false,
+      "lineWidth": 80,
+      "indentWidth": 2,
+      "semiColons": true,
+      "singleQuote": false,
+      "proseWrap": "preserve"
+    }
+  }
+}
